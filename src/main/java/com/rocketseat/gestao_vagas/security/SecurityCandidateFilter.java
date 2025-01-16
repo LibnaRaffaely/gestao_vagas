@@ -3,6 +3,8 @@ package com.rocketseat.gestao_vagas.security;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
+@EnableMethodSecurity
 public class SecurityCandidateFilter extends OncePerRequestFilter {
     @Autowired
     private JWTCandidateProvider jwtCandidateProvider;
@@ -23,8 +26,6 @@ public class SecurityCandidateFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        SecurityContextHolder.getContext().setAuthentication(null);
 
         String header = request.getHeader("Authorization");
 
@@ -45,10 +46,19 @@ public class SecurityCandidateFilter extends OncePerRequestFilter {
                 // será uma lista de objetos GrantedAuthority
                 var grants = roles.stream()
                         .map(
-                                role -> new SimpleGrantedAuthority(role.toString())) // aqui cada role será convertida
-                                                                                     // em um objeto do tipo
-                                                                                     // SimpleGrantedAuthority
+                                role -> new SimpleGrantedAuthority("ROLE_" + role.toString().toUpperCase())) // aqui
+                                                                                                             // cada
+                                                                                                             // role
+                                                                                                             // será
+                        // convertida
+                        // em um objeto do tipo
+                        // SimpleGrantedAuthority
                         .toList();
+
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(token.getSubject(),
+                        null, grants);
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
 
                 System.out.println("----------TOKEN-----------");
                 System.out.println(token);

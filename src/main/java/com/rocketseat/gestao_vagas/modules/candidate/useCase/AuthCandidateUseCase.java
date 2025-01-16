@@ -20,46 +20,46 @@ import com.rocketseat.gestao_vagas.modules.candidate.dto.AuthCandidateResponseDT
 
 @Service
 public class AuthCandidateUseCase {
-    // saber se temos um candidate pelo repositório
-    @Autowired
-    private CandidateRepository candidateRepository;
+        // saber se temos um candidate pelo repositório
+        @Autowired
+        private CandidateRepository candidateRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+        @Autowired
+        private PasswordEncoder passwordEncoder;
 
-    @Value("${security.token.secret.candidate}")
-    private String secretKey;
+        @Value("${security.token.secret.candidate}")
+        private String secretKey;
 
-    public AuthCandidateResponseDTO execute(AuthCandidateRequestDTO authCandidateRequestDTO)
-            throws AuthenticationException {
-        var candidate = this.candidateRepository.findByUsername(authCandidateRequestDTO.username())
-                .orElseThrow(() -> {
-                    throw new UsernameNotFoundException("Username/password Incorrect");
-                });
+        public AuthCandidateResponseDTO execute(AuthCandidateRequestDTO authCandidateRequestDTO)
+                        throws AuthenticationException {
+                var candidate = this.candidateRepository.findByUsername(authCandidateRequestDTO.username())
+                                .orElseThrow(() -> {
+                                        throw new UsernameNotFoundException("Username/password Incorrect");
+                                });
 
-        var passwordsMatches = this.passwordEncoder
-                .matches(authCandidateRequestDTO.password(), candidate.getPassword());
+                var passwordsMatches = this.passwordEncoder
+                                .matches(authCandidateRequestDTO.password(), candidate.getPassword());
 
-        if (!passwordsMatches) {
-            throw new AuthenticationException();
+                if (!passwordsMatches) {
+                        throw new AuthenticationException();
+                }
+
+                Algorithm algorithm = Algorithm.HMAC256(secretKey);
+
+                var expiresIn = Instant.now().plus(Duration.ofHours(2));
+
+                var token = JWT.create()
+                                .withIssuer("Javagas")
+                                .withSubject(candidate.getId().toString())
+                                .withExpiresAt(expiresIn)
+                                .withClaim("roles", Arrays.asList("CANDIDATE"))
+                                .sign(algorithm);
+
+                var authCandidateResponseDTO = AuthCandidateResponseDTO.builder()
+                                .acess_token(token)
+                                .expires_in(expiresIn.toEpochMilli())
+                                .build();
+
+                return authCandidateResponseDTO;
         }
-
-        Algorithm algorithm = Algorithm.HMAC256(secretKey);
-
-        var expiresIn = Instant.now().plus(Duration.ofHours(2));
-
-        var token = JWT.create()
-                .withIssuer("Javagas")
-                .withSubject(candidate.getId().toString())
-                .withExpiresAt(expiresIn)
-                .withClaim("roles", Arrays.asList("candidate"))
-                .sign(algorithm);
-
-        var authCandidateResponseDTO = AuthCandidateResponseDTO.builder()
-                .acess_token(token)
-                .expires_in(expiresIn.toEpochMilli())
-                .build();
-
-        return authCandidateResponseDTO;
-    }
 }

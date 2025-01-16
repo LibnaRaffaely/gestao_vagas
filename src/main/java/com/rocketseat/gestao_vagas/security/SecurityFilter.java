@@ -5,6 +5,8 @@ import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -17,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
+@EnableMethodSecurity
 // OncePerRequestFilter do próprio spring que tem o metodo que precisamos
 public class SecurityFilter extends OncePerRequestFilter {
 
@@ -36,25 +39,32 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         // teste para ver se ta ok
         System.out.println(header);
-        SecurityContextHolder.getContext().setAuthentication(null);
 
         if (request.getRequestURI().startsWith("/company") || request.getRequestURI().startsWith("/job")) {
             if (header != null) {
-                var subjectToken = this.jwtProvider.validateToken(header);
-                if (subjectToken.isEmpty()) {
+                var token = this.jwtProvider.validateToken(header);
+                if (token == null) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
 
                 // estamos armazenando na requisição o subjectToken como um atributo com o nome
                 // "company_id"
-                request.setAttribute("company_id", subjectToken);
+                request.setAttribute("company_id", token.getSubject());
+
+                var roles = token.getClaim("roles").asList(Object.class);
+                var grants = roles.stream()
+                        .map(
+                                role -> new SimpleGrantedAuthority("ROLE_" + role.toString().toUpperCase()))
+                        .toList();
 
                 // vamos precisar o usuário para o Spring
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(subjectToken, null,
-                        Collections.emptyList());
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(token.getSubject(),
+                        null,
+                        grants);
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
+                System.out.println("TESTEZIM");
             }
         }
 
