@@ -12,13 +12,13 @@ import com.rocketseat.gestao_vagas.modules.company.dto.AuthCompanyDTO;
 import com.rocketseat.gestao_vagas.modules.company.useCases.AuthCompanyUseCase;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/company")
 public class AuthCompanyController {
 
     @Autowired
     private AuthCompanyUseCase authCompanyUseCase;
 
-    @PostMapping("/company")
+    @PostMapping("/auth")
     public String create(@RequestBody AuthCompanyDTO authCompanyDTO) throws AuthenticationException {
         System.out.println("Sistema de verificação da conta iniciada");
         System.err.println(authCompanyDTO.getUsername());

@@ -18,11 +18,12 @@ import com.rocketseat.gestao_vagas.modules.company.repositories.CompanyRepositor
 
 @Service
 public class AuthCompanyUseCase {
-    @Value("${security.token.secret}")
-    private String secretKey;
 
     @Autowired
     private CompanyRepository companyRepository;
+
+    @Value("${security.token.secret}")
+    private String secretKey;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -48,8 +49,8 @@ public class AuthCompanyUseCase {
 
         var token = JWT.create()
                 .withIssuer("javagas")
-                .withExpiresAt(Instant.now().plus(Duration.ofHours(2)))
                 .withSubject(company.getId().toString())
+                .withExpiresAt(Instant.now().plus(Duration.ofHours(2)))
                 .sign(algorithm);
 
         return token;

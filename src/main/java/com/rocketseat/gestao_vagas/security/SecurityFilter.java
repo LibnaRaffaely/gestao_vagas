@@ -38,22 +38,24 @@ public class SecurityFilter extends OncePerRequestFilter {
         System.out.println(header);
         SecurityContextHolder.getContext().setAuthentication(null);
 
-        if (header != null) {
-            var subjectToken = this.jwtProvider.validateToken(header);
-            if (subjectToken.isEmpty()) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
+        if (request.getRequestURI().startsWith("/company") || request.getRequestURI().startsWith("/job")) {
+            if (header != null) {
+                var subjectToken = this.jwtProvider.validateToken(header);
+                if (subjectToken.isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+
+                // estamos armazenando na requisição o subjectToken como um atributo com o nome
+                // "company_id"
+                request.setAttribute("company_id", subjectToken);
+
+                // vamos precisar o usuário para o Spring
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(subjectToken, null,
+                        Collections.emptyList());
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
-
-            // estamos armazenando na requisição o subjectToken como um atributo com o nome
-            // "company_id"
-            request.setAttribute("company_id", subjectToken);
-
-            // vamos precisar o usuário para o Spring
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(subjectToken, null,
-                    Collections.emptyList());
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
         filterChain.doFilter(request, response);
