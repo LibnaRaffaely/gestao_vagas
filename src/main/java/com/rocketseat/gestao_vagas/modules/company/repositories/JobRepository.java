@@ -10,6 +10,6 @@ import com.rocketseat.gestao_vagas.modules.company.entity.JobEntity;
 public interface JobRepository extends JpaRepository<JobEntity, UUID> {
 
     // contains -> no SQL seria o LIKE
-    List<JobEntity> findByDescriptionContaining(String filter);
+    List<JobEntity> findByDescriptionContainingIgnoreCase(String filter);
 
 }

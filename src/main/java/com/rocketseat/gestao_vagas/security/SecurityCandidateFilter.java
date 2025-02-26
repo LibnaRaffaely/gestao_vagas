@@ -28,6 +28,9 @@ public class SecurityCandidateFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            header = header.replace("Bearer ", "");
+        }
 
         if (request.getRequestURI().startsWith("/candidate")) {
             if (header != null) {

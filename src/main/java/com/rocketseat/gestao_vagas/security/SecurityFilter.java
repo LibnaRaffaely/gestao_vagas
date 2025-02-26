@@ -36,6 +36,9 @@ public class SecurityFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            header = header.replace("Bearer ", "");
+        }
 
         // teste para ver se ta ok
         System.out.println(header);

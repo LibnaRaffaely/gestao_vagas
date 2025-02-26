@@ -1,7 +1,5 @@
 package com.rocketseat.gestao_vagas.modules.candidate.controller;
 
-import javax.naming.AuthenticationException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +22,8 @@ public class AuthCandidadeController {
     public ResponseEntity<Object> auth(@RequestBody AuthCandidateRequestDTO authCandidateRequestDTO) {
 
         try {
+            System.out.println("AQUI");
+            System.out.println(authCandidateRequestDTO.username());
             var token = this.authCandidateUseCase.execute(authCandidateRequestDTO);
             return ResponseEntity.ok().body(token);
         } catch (Exception e) {
