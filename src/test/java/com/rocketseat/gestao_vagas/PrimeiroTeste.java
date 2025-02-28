@@ -4,4 +4,5 @@ public class PrimeiroTeste {
     // tetetsnnecevvbv
     // jdhgfecguwidjebrj
     // efvccecevrvr
+    private int x;
 }
